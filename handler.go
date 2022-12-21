@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/boklazhenko/golang-socketio/protocol"
 	"reflect"
+	"strconv"
 	"sync"
 )
 
@@ -97,9 +98,13 @@ func (m *methods) processIncomingMessage(c *Channel, msg *protocol.Message) {
 			f.callFunc(c, &struct{}{})
 			return
 		}
+		args, err := strconv.Unquote(msg.Args)
+		if err != nil {
+			return
+		}
 
 		data := f.getArgs()
-		err := json.Unmarshal([]byte(msg.Args), data)
+		err = json.Unmarshal([]byte(args), data)
 		if err != nil {
 			return
 		}
@@ -114,9 +119,14 @@ func (m *methods) processIncomingMessage(c *Channel, msg *protocol.Message) {
 
 		var result []reflect.Value
 		if f.ArgsPresent {
+			args, err := strconv.Unquote(msg.Args)
+			if err != nil {
+				return
+			}
+
 			//data type should be defined for unmarshall
 			data := f.getArgs()
-			err := json.Unmarshal([]byte(msg.Args), data)
+			err = json.Unmarshal([]byte(args), data)
 			if err != nil {
 				return
 			}
