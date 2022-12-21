@@ -54,7 +54,12 @@ func newCaller(f interface{}) (*caller, error) {
 returns function parameter as it is present in it using reflection
 */
 func (c *caller) getArgs() interface{} {
-	return reflect.New(c.Args).Elem().Interface()
+	switch c.Args.Kind() {
+	case reflect.Interface, reflect.Pointer:
+		return reflect.New(c.Args).Elem().Interface()
+	default:
+		return reflect.New(c.Args).Interface()
+	}
 }
 
 /**
