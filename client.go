@@ -1,6 +1,7 @@
 package gosocketio
 
 import (
+	"fmt"
 	"github.com/boklazhenko/golang-socketio/transport"
 	"strconv"
 )
@@ -41,9 +42,19 @@ ws://myserver.com/socket.io/?EIO=3&transport=websocket
 You can use GetUrlByHost for generating correct url
 */
 func Dial(url string, tr transport.Transport) (*Client, error) {
+	return DialWithHandlers(url, tr, nil)
+}
+
+func DialWithHandlers(url string, tr transport.Transport, handlers map[string]interface{}) (*Client, error) {
 	c := &Client{}
 	c.initChannel()
 	c.initMethods()
+
+	for method, handler := range handlers {
+		if err := c.On(method, handler); err != nil {
+			return nil, fmt.Errorf("register method %s failed: %w", method, err)
+		}
+	}
 
 	var err error
 	c.conn, err = tr.Connect(url)
